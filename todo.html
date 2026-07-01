@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modern To-Do App</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(135deg,#4F46E5,#9333EA,#EC4899);
+    padding:20px;
+}
+
+.container{
+    width:100%;
+    max-width:720px;
+    background:rgba(255,255,255,.15);
+    backdrop-filter:blur(15px);
+    border:1px solid rgba(255,255,255,.2);
+    border-radius:25px;
+    padding:30px;
+    box-shadow:0 15px 35px rgba(0,0,0,.25);
+}
+
+h1{
+    text-align:center;
+    color:white;
+    margin-bottom:25px;
+    font-size:34px;
+}
+
+.input-box{
+    display:grid;
+    grid-template-columns:2fr 1fr 1fr auto;
+    gap:12px;
+}
+
+.input-box input{
+    padding:14px;
+    border:none;
+    outline:none;
+    border-radius:12px;
+    background:rgba(255,255,255,.85);
+    font-size:15px;
+}
+
+.add{
+    background:#06B6D4;
+    color:white;
+    border:none;
+    border-radius:12px;
+    padding:14px 20px;
+    cursor:pointer;
+    font-size:15px;
+    font-weight:600;
+    transition:.3s;
+}
+
+.add:hover{
+    background:#0891B2;
+    transform:scale(1.05);
+}
+
+ul{
+    margin-top:25px;
+}
+
+li{
+    list-style:none;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:white;
+    margin-bottom:15px;
+    padding:18px;
+    border-radius:15px;
+    box-shadow:0 5px 15px rgba(0,0,0,.15);
+    animation:fade .3s ease;
+}
+
+@keyframes fade{
+    from{
+        opacity:0;
+        transform:translateY(15px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+.task-details h3{
+    color:#1E293B;
+    margin-bottom:5px;
+}
+
+.task-details small{
+    color:#64748B;
+}
+
+.completed h3{
+    text-decoration:line-through;
+    color:gray;
+}
+
+.actions{
+    display:flex;
+    gap:8px;
+}
+
+.actions button{
+    border:none;
+    color:white;
+    padding:10px 14px;
+    border-radius:10px;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.complete{
+    background:#10B981;
+}
+
+.complete:hover{
+    background:#059669;
+}
+
+.edit{
+    background:#F59E0B;
+}
+
+.edit:hover{
+    background:#D97706;
+}
+
+.delete{
+    background:#EF4444;
+}
+
+.delete:hover{
+    background:#DC2626;
+}
+
+.empty{
+    text-align:center;
+    color:white;
+    margin-top:25px;
+    font-size:18px;
+}
+
+@media(max-width:700px){
+
+.input-box{
+grid-template-columns:1fr;
+}
+
+li{
+flex-direction:column;
+align-items:flex-start;
+}
+
+.actions{
+margin-top:12px;
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>📝 My To-Do List</h1>
+
+<div class="input-box">
+
+<input type="text" id="task" placeholder="Enter your task">
+
+<input type="date" id="date">
+
+<input type="time" id="time">
+
+<button class="add" onclick="addTask()">Add</button>
+
+</div>
+
+<ul id="taskList"></ul>
+
+</div>
+
+<script>
+
+let tasks=JSON.parse(localStorage.getItem("tasks"))||[];
+
+displayTasks();
+
+function saveTasks(){
+localStorage.setItem("tasks",JSON.stringify(tasks));
+}
+
+function addTask(){
+
+let task=document.getElementById("task").value.trim();
+let date=document.getElementById("date").value;
+let time=document.getElementById("time").value;
+
+if(task===""){
+alert("Please enter a task.");
+return;
+}
+
+tasks.push({
+task,
+date,
+time,
+completed:false
+});
+
+saveTasks();
+displayTasks();
+
+document.getElementById("task").value="";
+document.getElementById("date").value="";
+document.getElementById("time").value="";
+
+}
+
+function displayTasks(){
+
+let list=document.getElementById("taskList");
+list.innerHTML="";
+
+if(tasks.length===0){
+list.innerHTML="<p class='empty'>No tasks available.</p>";
+return;
+}
+
+tasks.forEach((item,index)=>{
+
+let li=document.createElement("li");
+
+if(item.completed){
+li.classList.add("completed");
+}
+
+li.innerHTML=`
+
+<div class="task-details">
+
+<h3>${item.task}</h3>
+
+<small>📅 ${item.date || "No Date"} &nbsp; ⏰ ${item.time || "No Time"}</small>
+
+</div>
+
+<div class="actions">
+
+<button class="complete" onclick="toggleComplete(${index})">✔</button>
+
+<button class="edit" onclick="editTask(${index})">Edit</button>
+
+<button class="delete" onclick="deleteTask(${index})">Delete</button>
+
+</div>
+
+`;
+
+list.appendChild(li);
+
+});
+
+}
+
+function toggleComplete(index){
+
+tasks[index].completed=!tasks[index].completed;
+
+saveTasks();
+
+displayTasks();
+
+}
+
+function deleteTask(index){
+
+if(confirm("Delete this task?")){
+
+tasks.splice(index,1);
+
+saveTasks();
+
+displayTasks();
+
+}
+
+}
+
+function editTask(index){
+
+let task=prompt("Edit Task",tasks[index].task);
+
+if(task===null) return;
+
+task=task.trim();
+
+if(task===""){
+alert("Task cannot be empty.");
+return;
+}
+
+let date=prompt("Edit Date (YYYY-MM-DD)",tasks[index].date);
+
+if(date===null) date=tasks[index].date;
+
+let time=prompt("Edit Time (HH:MM)",tasks[index].time);
+
+if(time===null) time=tasks[index].time;
+
+tasks[index].task=task;
+tasks[index].date=date;
+tasks[index].time=time;
+
+saveTasks();
+
+displayTasks();
+
+}
+
+</script>
+
+</body>
+</html>
